@@ -1,5 +1,6 @@
 from IPython.display import display, HTML
 
+import re
 import os
 import json
 import shutil
@@ -7,17 +8,17 @@ import zipfile
 import requests
 
 
-def display_images(imgs, imgs_path):    
-    html_content = '<div style="display: flex; gap: 10px;">'    
+def display_images(imgs, imgs_path):
+    html_content = '<div style="display: flex; gap: 10px;">'
     
-    for img in imgs:        
-        img_path = os.path.join(imgs_path, img)        
-        html_content += f'<img src="{img_path}" style="height: 200px;">'    
+    for img in imgs:
+        img_path = os.path.join(imgs_path, img)
+        html_content += f'<img src="{img_path}" style="height: 200px;">'
     
-    html_content += '</div>'    
+    html_content += '</div>'
     display(HTML(html_content))
-    
-    
+
+
 def compare_num_questions(json_path, questions_lst, is_eval=False):
     with open(json_path, 'r') as f:
         json_data = json.load(f)
@@ -85,12 +86,10 @@ def compare_num_videos(json_path, videos_lst, replace_this='', is_eval=False):
                     if content['type'] == 'image':
                         videos_json.add(content['image'].replace(replace_this, ''))
                         break
-    
     else:
         for data in json_data:
             videos_json.add(data['images'][0].replace(replace_this, ''))
-            
-            
+                        
     num_videos = len(videos_lst)
     num_videos_json = len(videos_json)
     print(f'Number of videos in the dataset: {num_videos}')
@@ -102,6 +101,32 @@ def compare_num_videos(json_path, videos_lst, replace_this='', is_eval=False):
         print(f'Real videos: {sorted(videos_lst)}\n')
         print(f'Copied videos: {sorted(videos_json)}')
     
+
+def add_token(json_path, token):
+    with open(json_path, 'r') as f:
+        json_data = json.load(f)
+
+    for data in json_data:
+        for message in data['messages']:
+            message['content'] = token * len(data['images']) + message['content']
+            break
+    
+    with open(json_path, 'w') as f:
+        json.dump(json_data, f, indent=4)
+    
+
+def remove_tokens(json_path, tokens):
+    with open(json_path, 'r') as f:
+        json_data = json.load(f)
+    
+    pattern = '|'.join(re.escape(token) for token in tokens)
+    for data in json_data:
+        for message in data['messages']:
+            message['content'] = re.sub(pattern, '', message['content'])
+
+    with open(json_path, 'w') as f:
+        json.dump(json_data, f, indent=4)
+
 
 def bdd_x_videos_filtration(text_file_path, 
                             unzip_path,
@@ -178,13 +203,5 @@ def bdd_x_videos_filtration(text_file_path,
         print(f'Number of filtered videos: {len(filtered_videos)}')
         
     print(f'Finished filtering all videos')
-        
-        
-                
-                
-        
-        
-        
-                 
         
         
