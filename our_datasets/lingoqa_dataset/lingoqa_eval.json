@@ -762,7 +762,7 @@
                 {
                     "type": "text",
                     "text": "What traffic is there, and, if any, where is it?",
-                    "answer": "There is traffic in the oncoming lane and there\u00a0is no traffic ahead of me in my lane."
+                    "answer": "There is traffic in the oncoming lane and there is no traffic ahead of me in my lane."
                 }
             ]
         }
@@ -31578,7 +31578,7 @@
                 {
                     "type": "text",
                     "text": "Should you stop behind the black cab?",
-                    "answer": "No, I shouldn't stop behind a black car because it\u2019s parked."
+                    "answer": "No, I shouldn't stop behind a black car because it’s parked."
                 }
             ]
         }

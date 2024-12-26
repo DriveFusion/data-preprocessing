@@ -19,7 +19,46 @@ def display_images(imgs, imgs_path):
     display(HTML(html_content))
 
 
-def compare_num_questions(json_path, questions_lst, is_eval=False):
+def add_token(json_path, token, is_llama=True):
+    with open(json_path, 'r') as f:
+        json_data = json.load(f)
+
+    messages = 'messages' if is_llama == True else 'conversations'
+    images = 'images' if is_llama == True else 'image'
+    content = 'content' if is_llama == True else 'value'
+    for data in json_data:
+        for message in data[messages]:
+            message[content] = token * len(data[images]) + message[content]
+            break
+    
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(json_data, f, indent=4, ensure_ascii=False)
+    
+
+def remove_tokens_messages(messages, tokens):
+    pattern = '|'.join(re.escape(token) for token in tokens)
+    
+    if isinstance(messages, list) == True:
+        return [re.sub(pattern, '', message) for message in messages]
+    else:
+        return re.sub(pattern, '', messages)
+    
+
+
+def remove_tokens(json_path, tokens):
+    with open(json_path, 'r') as f:
+        json_data = json.load(f)
+    
+    pattern = '|'.join(re.escape(token) for token in tokens)
+    for data in json_data:
+        for message in data['messages']:
+            message['content'] = re.sub(pattern, '', message['content'])
+
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(json_data, f, indent=4, ensure_ascii=False)
+
+
+def compare_num_questions(json_path, questions_lst, tokens=[], is_eval=False):
     with open(json_path, 'r') as f:
         json_data = json.load(f)
 
@@ -41,7 +80,7 @@ def compare_num_questions(json_path, questions_lst, is_eval=False):
     num_questions_json = len(questions_json)
     print(f'Number of questions in the dataset: {num_questions}')
     print(f'Number of questions in the JSON file: {num_questions_json}')
-    if sorted(questions_lst) == sorted(questions_json):
+    if sorted(remove_tokens_messages(questions_lst, tokens)) == sorted(remove_tokens_messages(questions_json, tokens)):
         print('They have the same questions.\n')
     else:
         print('They do not have the same questions.\n')
@@ -74,7 +113,7 @@ def compare_num_answers(json_path, answers_lst, is_eval=False):
         print('They do not have the same answers.\n')
     
     
-def compare_num_videos(json_path, videos_lst, replace_this='', is_eval=False):
+def compare_num_videos(json_path, videos_lst, tokens=[], is_eval=False):
     with open(json_path, 'r') as f:
         json_data = json.load(f)
     
@@ -84,11 +123,11 @@ def compare_num_videos(json_path, videos_lst, replace_this='', is_eval=False):
             for message in data:
                 for content in message['content']:
                     if content['type'] == 'image':
-                        videos_json.add(content['image'].replace(replace_this, ''))
+                        videos_json.add(remove_tokens_messages(content['image'], tokens))
                         break
     else:
         for data in json_data:
-            videos_json.add(data['images'][0].replace(replace_this, ''))
+            videos_json.add(remove_tokens_messages(data['images'], tokens)[0])
                         
     num_videos = len(videos_lst)
     num_videos_json = len(videos_json)
@@ -101,32 +140,6 @@ def compare_num_videos(json_path, videos_lst, replace_this='', is_eval=False):
         print(f'Real videos: {sorted(videos_lst)}\n')
         print(f'Copied videos: {sorted(videos_json)}')
     
-
-def add_token(json_path, token):
-    with open(json_path, 'r') as f:
-        json_data = json.load(f)
-
-    for data in json_data:
-        for message in data['messages']:
-            message['content'] = token * len(data['images']) + message['content']
-            break
-    
-    with open(json_path, 'w') as f:
-        json.dump(json_data, f, indent=4)
-    
-
-def remove_tokens(json_path, tokens):
-    with open(json_path, 'r') as f:
-        json_data = json.load(f)
-    
-    pattern = '|'.join(re.escape(token) for token in tokens)
-    for data in json_data:
-        for message in data['messages']:
-            message['content'] = re.sub(pattern, '', message['content'])
-
-    with open(json_path, 'w') as f:
-        json.dump(json_data, f, indent=4)
-
 
 def bdd_x_videos_filtration(text_file_path, 
                             unzip_path,
