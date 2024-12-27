@@ -1,3 +1,4 @@
+.gitignore
 .venv/
 datasets/
 our_datasets/

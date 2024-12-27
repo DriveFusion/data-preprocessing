@@ -19,7 +19,7 @@ def display_images(imgs, imgs_path):
     display(HTML(html_content))
 
 
-def add_token(json_path, token, is_llama=True):
+def add_token(json_path, token, is_llama):
     with open(json_path, 'r') as f:
         json_data = json.load(f)
 
@@ -45,14 +45,16 @@ def remove_tokens_messages(messages, tokens):
     
 
 
-def remove_tokens(json_path, tokens):
+def remove_tokens(json_path, tokens, is_llama):
     with open(json_path, 'r') as f:
         json_data = json.load(f)
     
+    messages = 'messages' if is_llama == True else 'conversations'
+    content = 'content' if is_llama == True else 'value'
     pattern = '|'.join(re.escape(token) for token in tokens)
     for data in json_data:
-        for message in data['messages']:
-            message['content'] = re.sub(pattern, '', message['content'])
+        for message in data[messages]:
+            message[content] = re.sub(pattern, '', message[content])
 
     with open(json_path, 'w', encoding='utf-8') as f:
         json.dump(json_data, f, indent=4, ensure_ascii=False)

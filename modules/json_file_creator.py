@@ -16,7 +16,7 @@ class JsonFileCreator(ABC):
     
     
     @abstractmethod
-    def format_to_train_mutli_question(self, data, token):
+    def format_to_train_mutli_question(self, data):
         pass
     
     
